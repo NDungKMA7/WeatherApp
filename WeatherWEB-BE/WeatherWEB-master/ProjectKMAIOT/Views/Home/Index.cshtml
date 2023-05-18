@@ -1,0 +1,16 @@
+﻿@Model
+
+<script src="~/signalr/site.js"></script><script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+
+<script>
+    let connection = new signalR.HubConnectionBuilder().withUrl("/signalServer").build();
+
+    connection.start();
+
+    connection.on("refreshData", function (messs) {
+        console.log(messs);
+        console.log("Hello");
+    });
+
+
+</script>
