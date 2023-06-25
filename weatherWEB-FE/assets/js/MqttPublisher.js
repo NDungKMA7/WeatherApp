@@ -42,16 +42,8 @@ function connectToBroker() {
 }
 
 function SaveData(str){
-  axios({
-    method: 'post',
-    url: 'https://localhost:7296/Home/SaveData',
-    data: {
-      "body": str,
-    }
-  }).then((res) => { 
-    console.log(res);
-  })
-  .catch((err) => { 
-    console.log(err);
-  });;
+  connection.invoke("SaveData", str).catch(function (err) {
+    console.error(err);
+});
+
 }

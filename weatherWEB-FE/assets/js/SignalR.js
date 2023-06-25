@@ -1,4 +1,7 @@
 let connection = new signalR.HubConnectionBuilder().withUrl('https://localhost:7296/signalServer').build();
+const axiosInstance = axios.create({
+    baseURL: 'https://localhost:7296/'
+});
 
 connection.start();
 
@@ -7,32 +10,20 @@ connection.on("refreshData", function () {
 });
 
 async function loadData() {
-try{
-    await axios({
-        method: 'get',
-        url: 'https://localhost:7296/Home/GetOnlyDay',
-    }).then((res) => {
-        changeHighlightsCard(res.data);
-    });
-    
-    await axios({
-        method: 'get',
-        url: 'https://localhost:7296/Home/GetDaily',
-    }).then((res) => {
-        showWeeksData(res.data);
-    });
-    
-    await axios({
-        method: 'get',
-        url: 'https://localhost:7296/Home/GetHourly',
-    }).then((res) => {
-        showHoursData(res.data);
-        changeCurrentCard(res.data[res.data.length - 1]);
-    })
-}catch(err){
-    console.log(err);
-}
-    
+    try {
+        const [response1, response2, response3] = await Promise.all([
+            axiosInstance.get('Home/GetOnlyDay'),
+            axiosInstance.get('Home/GetDaily'),
+            axiosInstance.get('Home/GetHourly')
+        ]);
+
+        changeHighlightsCard(response1.data);
+        showWeeksData(response2.data);
+        showHoursData(response3.data);
+        changeCurrentCard(response3.data[response3.data.length - 1]);
+    } catch (error) {
+        console.log(error);
+    }
 }
 function showWeeksData(data) {
     forecastList.innerHTML = "";
@@ -66,26 +57,28 @@ function showWeeksData(data) {
 
 let chartInstance = null;
 function showHoursData(data) {
-    var listTemp = [];
-    var listRain = [];
-    var listHumidity = [];
-    var listAir = [];
-    var listHour = [];
+    const labels = [];
+    const humidity = [];
+    const temperature = [];
+    const rain = [];
+    const air = [];
 
-    for (var i = 0; i < data.length; i++) {
-        listTemp[i] = data[i].temperature;
-        listRain[i] = data[i].rain;
-        listAir[i] = data[i].air;
-        listHumidity[i] = data[i].humidity;
-        listHour[i] = data[i].hour;
+    for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+        labels.push(item.hour);
+        humidity.push(item.humidity);
+        temperature.push(item.temperature);
+        rain.push(item.rain);
+        air.push(item.air);
     }
-    var data = {
-        labels: listHour,
-        humidity: listHumidity,
-        temperature: listTemp,
-        rain: listRain,
-        air: listAir
-    }
+
+    const data = {
+        labels: labels,
+        humidity: humidity,
+        temperature: temperature,
+        rain: rain,
+        air: air
+    };
 
     const ctx = document.getElementById('chart');
     if (chartInstance != null) {
@@ -180,20 +173,14 @@ function Rain(condition) {
 }
 
 async function GetWaringOpenAI(data, rain) {
-    await axios({
-        method: 'post',
-        url: 'https://localhost:7296/Home/GetResultOpenAI',
-        data: {
+    try {
+        const response = await axios.post('https://localhost:7296/Home/GetResultOpenAI', {
             "body": `Từ thông số sau: nhiệt độ ${data.temperature}, độ ẩm ${data.humidity}, ${rain}, chất lượng không khí:${data.air} hãy đưa ra cảnh báo cho tôi về sức khỏe`,
+        });
+        WarningText.innerText = response.data;
+    } catch (error) {
+        if (error.response && error.response.status !== 200) {
+            WarningText.innerText = "Chúng tôi đang phân tích!";
         }
-    }).then((res) => {
-        WarningText.innerText = res.data;
-    })
-        .catch((err) => {
-           if(error.response.status != 200){
-            WarningText.innerText = "Chúng tôi đang phân tích !";
-           }
-        });;
+    }
 }
-
-loadData();
