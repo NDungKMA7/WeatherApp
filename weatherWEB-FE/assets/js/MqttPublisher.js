@@ -37,6 +37,7 @@ function connectToBroker() {
 
   // Received
   mqttClient.on("message", (topic, message, packet) => {
+    
     SaveData(message.toString());
   });
 }

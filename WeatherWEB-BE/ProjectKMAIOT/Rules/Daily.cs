@@ -1,4 +1,5 @@
-﻿using ProjectKMAIOT.Dto;
+﻿using Microsoft.EntityFrameworkCore;
+using ProjectKMAIOT.Dto;
 using ProjectKMAIOT.Models;
 using System.Collections.Generic;
 using System.Runtime.Intrinsics.Arm;
@@ -10,43 +11,33 @@ namespace ProjectKMAIOT.Rules
         private MyDbConnect db = new MyDbConnect();
         public string currentDate = DateTime.Now.ToString("yyyy-MM-dd");
 
-        public List<WeekData> GetWeeksData()
+        public async Task<List<WeekData>> GetWeeksData()
         {
-             List<WeekData> ls =  db.DailyRecord.OrderByDescending(x => x.ID).Take(7).Select(x => new WeekData { Day = x.Day, TemperatureMax = x.TemperatureMax, RainSensor = x.RainSensor,ID=x.ID}).ToList();    
+             List<WeekData> ls = await db.DailyRecord.OrderByDescending(x => x.ID).Take(7).Select(x => new WeekData { Day = x.Day, TemperatureMax = x.TemperatureMax, RainSensor = x.RainSensor,ID=x.ID}).ToListAsync();    
             return ls;  
         }
-        public DailyDataRecord GetOnlyDayData()
+        public async Task<DailyDataRecord> GetOnlyDayData()
         {
-            DailyDataRecord ls = db.DailyRecord.OrderByDescending(x => x.ID).FirstOrDefault();
+            DailyDataRecord ls = await db.DailyRecord.OrderByDescending(x => x.ID).FirstOrDefaultAsync();
             return ls;
         }
 
-        /*public List<DailyDataRecord> GetWeeksData()
-        {
-            List<DailyDataRecord> ls = db.DailyRecord.OrderByDescending(x => x.ID).Take(7).ToList();
-            return ls;
-        }
-        public DailyDataRecord GetOnlyDayData()
-        {
-            DailyDataRecord ls = db.DailyRecord.OrderByDescending(x => x.ID).FirstOrDefault();
-            return ls;
-        }*/
 
-        public void ControlData(ReceiveData rd)
+        public async Task ControlData(ReceiveData rd)
         {
-            DailyDataRecord RecordLast = db.DailyRecord.OrderByDescending(x => x.ID).FirstOrDefault();
+            DailyDataRecord RecordLast = await db.DailyRecord.OrderByDescending(x => x.ID).FirstOrDefaultAsync();
             if (RecordLast == null || RecordLast.Day.Equals(currentDate) == false)
             {
-                CreateRecord(rd);
+                await CreateRecord(rd);
             }
             else
             {
-                UpdateRecord(rd, RecordLast);
+                await UpdateRecord(rd, RecordLast);
             }
 
         }
 
-        public void CreateRecord(ReceiveData rd)
+        public async Task CreateRecord(ReceiveData rd)
         {
             DailyDataRecord record = new DailyDataRecord();
             record.TemperatureMin = rd.temperature;
@@ -57,10 +48,10 @@ namespace ProjectKMAIOT.Rules
             record.AirSensor = rd.air;
             record.RainSensor = rd.rain;
             db.DailyRecord.Add(record);
-            db.SaveChanges();   
+            await db.SaveChangesAsync();   
         }
 
-        public void UpdateRecord(ReceiveData rd, DailyDataRecord daily)
+        public async Task UpdateRecord(ReceiveData rd, DailyDataRecord daily)
         {
             if(daily.TemperatureMin > rd.temperature) { 
                 daily.TemperatureMin = rd.temperature;  
@@ -79,7 +70,7 @@ namespace ProjectKMAIOT.Rules
             }
             daily.AirSensor = rd.air;
             daily.RainSensor = rd.rain;
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
 
     }

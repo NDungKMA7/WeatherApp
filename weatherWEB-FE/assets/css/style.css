@@ -889,7 +889,7 @@ article.container::before {
 
   .highlight-card:nth-child(-n+2) {
     grid-column: span 2;
-    height: 160px;
+   
   }
 
   .highlight-card:nth-child(n+3) { height: 120px; }
@@ -1027,7 +1027,6 @@ article.container::before {
 
   .forecast-card .title-2 { --title-2: 2.2rem; }
 
-  .highlight-card:nth-child(-n+2) { height: 250px; }
 
   .highlight-card:nth-child(n+3) { height: 150px; }
 

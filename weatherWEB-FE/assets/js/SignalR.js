@@ -56,15 +56,15 @@ function showWeeksData(data) {
 }
 
 let chartInstance = null;
-function showHoursData(data) {
+function showHoursData(dataRc) {
     const labels = [];
     const humidity = [];
     const temperature = [];
     const rain = [];
     const air = [];
 
-    for (let i = 0; i < data.length; i++) {
-        const item = data[i];
+    for (let i = 0; i < dataRc.length; i++) {
+        const item = dataRc[i];
         labels.push(item.hour);
         humidity.push(item.humidity);
         temperature.push(item.temperature);
@@ -175,7 +175,7 @@ function Rain(condition) {
 async function GetWaringOpenAI(data, rain) {
     try {
         const response = await axios.post('https://localhost:7296/Home/GetResultOpenAI', {
-            "body": `Từ thông số sau: nhiệt độ ${data.temperature}, độ ẩm ${data.humidity}, ${rain}, chất lượng không khí:${data.air} hãy đưa ra cảnh báo cho tôi về sức khỏe`,
+            "body": `Hãy phân tích vấn đề về sức khỏe dựa trên các thông số về thời tiết như sau: Độ ẩm:  ${data.humidity}, Nhiệt độ  ${data.temperature} ${rain}, chất lượng không khí : ${data.air} ppm/co2 . Câu trả lời chỉ giới hạn 50 từ`,
         });
         WarningText.innerText = response.data;
     } catch (error) {
