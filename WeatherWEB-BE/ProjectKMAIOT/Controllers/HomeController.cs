@@ -38,17 +38,17 @@ namespace ProjectKMAIOT.Controllers
         public async Task<IActionResult> GetOnlyDay()
         {
             DailyDataRecord Onlywd = await _daily.GetOnlyDayData();
-            return Ok(Onlywd);
+            return Json(Onlywd);
         }
         public async Task<IActionResult> GetDaily()
         {
             List<WeekData> lwd = await _daily.GetWeeksData();
-            return Ok(lwd);
+            return Json(lwd);
         }
         public async Task<IActionResult> GetHourly()
         {
             List<HourlyDataRecord> lhd = await _hourly.GetHoursData();
-            return Ok(lhd);
+            return Json(lhd);
         }
        
     }
